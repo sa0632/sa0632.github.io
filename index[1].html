@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helena Le - Developer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@200;300;400&family=Noto+Sans+JP:wght@200;300;400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 11px;
+            line-height: 1.8;
+            letter-spacing: 0.05em;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            mix-blend-mode: difference;
+            will-change: transform;
+        }
+
+        .cursor.hover {
+            transform: scale(10);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Vertical writing effect */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            font-size: 9px;
+            opacity: 0.4;
+            letter-spacing: 0.3em;
+        }
+
+        /* Main container */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 40px;
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 10px;
+            font-weight: 300;
+            opacity: 0.7;
+            line-height: 1.2;
+        }
+
+        .nav {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            z-index: 100;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: right;
+        }
+
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            position: relative;
+        }
+
+        .nav a:hover {
+            opacity: 1;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            width: 8px;
+            height: 1px;
+            background: #fff;
+            transform: translateY(-50%) scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav a:hover::after {
+            transform: translateY(-50%) scaleX(1);
+        }
+
+        /* Hero section */
+        .hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 13px;
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .hero .subtitle {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.8s forwards;
+        }
+
+        .hero .description {
+            font-size: 9px;
+            line-height: 2;
+            max-width: 400px;
+            opacity: 0;
+            animation: fadeInUp 1s ease 1.1s forwards;
+        }
+
+        /* Zen circle */
+        .zen-circle {
+            position: fixed;
+            top: 50%;
+            right: 15%;
+            width: 200px;
+            height: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            animation: fadeIn 2s ease 1.5s forwards;
+        }
+
+        .zen-circle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Content sections */
+        .section {
+            padding: 80px 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section-title {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            opacity: 0.4;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(200, 13, 13, 0.1);
+        }
+
+        /* Projects grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 60px;
+            margin-top: 40px;
+        }
+
+        .project {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 40px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .project:hover {
+            opacity: 0.7;
+        }
+
+        .project-number {
+            font-size: 8px;
+            opacity: 0.3;
+            margin-bottom: 15px;
+        }
+
+        .project-title {
+            font-size: 11px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .project-description {
+            font-size: 9px;
+            line-height: 2;
+            opacity: 0.6;
+            margin-bottom: 25px;
+        }
+
+        .project-tech {
+            font-size: 8px;
+            opacity: 0.4;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Skills section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .skill-category {
+            padding: 30px 0;
+        }
+
+        .skill-category h3 {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .skill-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .skill-name {
+            font-size: 9px;
+            opacity: 0.7;
+            flex: 1;
+        }
+
+        .skill-level {
+            width: 60px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            margin-left: 20px;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.4);
+            width: 0;
+            transition: width 1.5s ease 0.3s;
+            position: relative;
+        }
+
+        .skill-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -1px;
+            width: 2px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Timeline styles */
+        .timeline {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 60px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .timeline-date {
+            width: 120px;
+            font-size: 8px;
+            opacity: 0.4;
+            text-align: right;
+            padding-right: 40px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-left: 40px;
+        }
+
+        .timeline-content h3 {
+            font-size: 10px;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content .company {
+            font-size: 8px;
+            opacity: 0.5;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .timeline-content .description {
+            font-size: 9px;
+            line-height: 2;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+
+        .timeline-skills {
+            font-size: 8px;
+            opacity: 0.4;
+            letter-spacing: 0.1em;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 57px;
+            top: 5px;
+            width: 7px;
+            height: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            background: #000;
+        }
+
+        /* Thoughts section */
+        .thoughts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .thought-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 30px;
+        }
+
+        .thought-date {
+            font-size: 8px;
+            opacity: 0.3;
+            margin-bottom: 15px;
+            letter-spacing: 0.1em;
+        }
+
+        .thought-title {
+            font-size: 10px;
+            font-weight: 300;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .thought-excerpt {
+            font-size: 9px;
+            line-height: 2;
+            opacity: 0.6;
+            margin-bottom: 20px;
+        }
+
+        .thought-tag {
+            font-size: 8px;
+            opacity: 0.4;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Collaboration grid */
+        .collaboration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .collab-item {
+            padding: 20px 0;
+        }
+
+        .collab-item h3 {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+
+        .collab-item p {
+            font-size: 9px;
+            line-height: 2;
+            opacity: 0.7;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 80px 40px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .contact-info {
+            font-size: 9px;
+            opacity: 0.6;
+            line-height: 2;
+        }
+
+        .contact-info a {
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            opacity: 1;
+        }
+
+        /* Japanese accent elements */
+        .haiku {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            font-size: 8px;
+            opacity: 0.2;
+            line-height: 2;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .zen-dot {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .zen-dot:nth-child(1) { top: 20%; left: 10%; }
+        .zen-dot:nth-child(2) { top: 60%; left: 80%; }
+        .zen-dot:nth-child(3) { top: 80%; left: 20%; }
+        .zen-dot:nth-child(4) { top: 30%; left: 90%; }
+        .zen-dot:nth-child(5) { top: 70%; left: 5%; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero, .section, .header, .footer {
+                padding: 20px;
+            }
+            
+            .nav {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+            }
+            
+            .nav ul {
+                flex-direction: row;
+                gap: 15px;
+            }
+            
+            .zen-circle {
+                display: none;
+            }
+            
+            .vertical-text {
+                display: none;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    
+    <!-- Zen dots for atmosphere -->
+    <div class="zen-dot"></div>
+    <div class="zen-dot"></div>
+    <div class="zen-dot"></div>
+    <div class="zen-dot"></div>
+    <div class="zen-dot"></div>
+    <div class="zen-dot"></div>
+    
+    <div class="vertical-text">SOFTWARE DEVELOPER</div>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                helena.le<br>
+                developer
+            </div>
+            
+            <nav class="nav">
+                <ul>
+                    <li><a href="#about">about</a></li>
+                    <li><a href="#work">work</a></li>
+                    <li><a href="#philosophy">philosophy</a></li>
+                    <li><a href="#experience">experience</a></li>
+                    <li><a href="#education">education</a></li>
+                    <li><a href="#thoughts">thoughts</a></li>
+                    <li><a href="#contact">contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h1>
+                    meet your next hire.<br>
+                    code through excellence.
+                </h1>
+                <div class="subtitle">
+                    minimalist approach to complex problems
+                </div>
+                <div class="description">
+                    focused on bringing clean code and quality work, desgined to deliver satisfactory to every client.<br>
+                    every line of code serves a purpose.
+                </div>
+            </div>
+            <div class="zen-circle"></div>
+        </section>
+        <section id="about" class="section">
+            <h2 class="section-title">about me_</h2>
+            <div style="max-width: 600px; margin: 0 auto;">
+                <p style="font-size: 9px; line-height: 2.2; opacity: 0.7; margin-bottom: 40px;">
+                    Hi, I'm Helena — a freelance web developer focused on building clean, functional websites for small businesses and individuals. I care about clear communication, thoughtful design, and getting things done right.
+
+I work with a small number of clients at a time so I can give each project the attention it deserves.
+
+
+                <p style="font-size: 9px; line-height: 2.2; opacity: 0.7;">
+                    beyond coding, i am deeply interested in the philosophy of technology and its impact on society. i strive to write code that serves people, respects their time, and enhances their digital experiences. when i'm not coding, you can find me exploring the latest tech trends, reading about design principles, or enjoying a good cup of tea while contemplating the art of simplicity.
+                    </p>
+            </div>
+        <section id="work" class="section">
+            <h2 class="section-title">selected works_</h2>
+            <div class="projects-grid">
+                <div class="project">
+                    <div class="project-number">01</div>
+                    <h3 class="project-title">portfolio website</h3>
+                    <p class="project-description">
+                        this website itself is a project, designed to showcase my skills and philosophy. built with a focus on minimalism, performance, and user experience. every element carefully crafted to reflect my approach to development.
+                    </p>
+                    <div class="project-tech">react / node.js / openai api</div>
+                </div>
+
+                <div class="project">
+                    <div class="project-number">02</div>
+                    <h3 class="project-title">data visualization dashboard</h3>
+                    <p class="project-description">
+                        interactive analytics platform transforming complex datasets
+                        into intuitive visual narratives. emphasis on clarity
+                        and actionable insights.
+                    </p>
+                    <div class="project-tech">d3.js / python / postgresql</div>
+                </div>
+
+                <div class="project">
+                    <div class="project-number">03</div>
+                    <h3 class="project-title">minimalist e-commerce system</h3>
+                    <p class="project-description">
+                        clean commerce platform focusing on user experience
+                        and conversion optimization. every interaction carefully
+                        considered and refined.
+                    </p>
+                    <div class="project-tech">next.js / stripe / mongodb</div>
+                </div>
+
+                <div class="project">
+                    <div class="project-number">04</div>
+                    <h3 class="project-title">performance monitoring tool</h3>
+                    <p class="project-description">
+                        lightweight application monitoring solution with
+                        real-time metrics and intelligent alerting systems.
+                        built for reliability.
+                    </p>
+                    <div class="project-tech">go / redis / prometheus</div>
+                </div>
+            </div>
+        </section>
+            <h2 class="section-title">capabilities_</h2>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3>frontend development_</h3>
+                    <div class="skill-item">
+                        <span class="skill-name">react / next.js</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="95"></div>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">typescript / javascript</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="79"></div>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">css / sass / tailwind</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="79"></div>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">html5 / accessibility / github</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="85"></div>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">ui/ux design basics</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="78"></div>
+                        </div>
+                    </div>     
+                    <div class="skill-item">
+                        <span class="skill-name">api / intergration</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="80"></div>
+                        </div>
+                    </div>
+
+                    <div class="skill-item">
+                        <span class="skill-name">figma / webflow</span>
+                        <div class="skill-level">
+                            <div class="skill-fill" data-level="85"></div>
+                    </div>    
+                </div>          
+
+             <section id="experience" class="section">
+            <h2 class="section-title">professional journey_</h2>
+            
+                <div class="timeline-item">
+                    <div class="timeline-date">2020 - present</div>
+                    <div class="timeline-content">
+                        <h3>frontend developer</h3>
+                        <p class="company">digital harmony</p>
+                        <p class="description">
+                            developed responsive web interfaces for e-commerce platforms. 
+                            focused on mobile-first design and performance optimization. 
+                            introduced modern build tools and development workflows.
+                            experimented with UI designs using Figma and Webflow. Began looking into Bootstrap.
+                        </p>
+                        <div class="timeline-skills">javascript • css • webflow • sass • figma</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">2017 - 2020</div>
+                    <div class="timeline-content">
+                        <h3>entry-level developer</h3>
+                        <p class="company">code collective</p>
+                        <p class="description">
+                            learned fundamentals of web development through real projects. 
+                            practiced coding standards and version control.
+                            developed skills in basic frontend technologies.
+                        </p>
+                        <div class="timeline-skills">html • css • javascript • git</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer id="contact" class="footer">
+            <div class="contact-info">
+                get in touch_<br><br>
+                <a href="mailto:helenale.dev@gmail.com">helenale.dev@gmail.com</a><br>
+                <a href="https://github.com/helenale" target="_blank">github.com/helenale</a><br>
+                <a href="https://www.linkedin.com/in/helenaledev/" target="_blank">linkedin.com/in/helenale</a>
+            </div>
+        </footer>
+    </div>
+
+    <div class="haiku">
+        コードは詩<br>
+        シンプルさの中に<br>
+        美しさあり
+    </div>
+
+    <script>
+        class JapaneseCursor {
+            constructor() {
+                this.cursor = document.querySelector('.cursor');
+                this.mouse = { x: 0, y: 0 };
+                this.cursorPos = { x: 0, y: 0 };
+                this.init();
+            }
+
+            init() {
+                // Track mouse position
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                // Smooth cursor animation
+                this.animateCursor();
+
+                // Hover effects for interactive elements
+                const interactiveElements = document.querySelectorAll('a, .project');
+                
+                interactiveElements.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        this.cursor.classList.add('hover');
+                    });
+                    
+                    el.addEventListener('mouseleave', () => {
+                        this.cursor.classList.remove('hover');
+                    });
+                });
+            }
+
+            animateCursor() {
+                // Smooth lerp (linear interpolation) for cursor movement
+                this.cursorPos.x += (this.mouse.x - this.cursorPos.x) * 0.15;
+                this.cursorPos.y += (this.mouse.y - this.cursorPos.y) * 0.15;
+
+                // Apply transform for better performance
+                this.cursor.style.transform = `translate(${this.cursorPos.x - 10}px, ${this.cursorPos.y - 10}px)`;
+
+                requestAnimationFrame(() => this.animateCursor());
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Parallax effect for zen circle
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const zenCircle = document.querySelector('.zen-circle');
+            if (zenCircle) {
+                zenCircle.style.transform = `translateY(calc(-50% + ${scrolled * 0.1}px))`;
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            new JapaneseCursor();
+            
+            // Skill animation on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const skillFills = entry.target.querySelectorAll('.skill-fill');
+                        skillFills.forEach((fill, index) => {
+                            const level = fill.getAttribute('data-level');
+                            setTimeout(() => {
+                                fill.style.width = level + '%';
+                            }, index * 100); // Stagger the animations
+                        });
+                    }
+                });
+            }, { threshold: 0.3 });
+
+            // Observe multiple sections for various animations
+            const sections = document.querySelectorAll('#about, #philosophy, #experience, #thoughts');
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</</html>
