@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sprinkle & Co. — Bakery</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink:#FF6B8A;
+  --pink-light:#FFE4EA;
+  --yellow:#FFD93D;
+  --yellow-light:#FFF8D6;
+  --mint:#6BCB77;
+  --mint-light:#E4F7E6;
+  --blue:#4D96FF;
+  --blue-light:#E0EEFF;
+  --purple:#C77DFF;
+  --purple-light:#F3E6FF;
+  --orange:#FF9A3C;
+  --white:#FFFDF9;
+  --dark:#2D2D2D;
+  --mid:#555;
+  --border:rgba(45,45,45,0.1);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--dark);overflow-x:hidden}
+::selection{background:var(--yellow);color:var(--dark)}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:16px 52px;background:rgba(255,253,249,0.97);backdrop-filter:blur(12px);border-bottom:3px solid var(--yellow)}
+.nav-logo{font-family:'Fredoka One',sans-serif;font-size:24px;color:var(--pink);cursor:pointer;letter-spacing:0.02em}
+.nav-logo span{color:var(--mint)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:14px;font-weight:700;color:var(--mid);text-decoration:none;cursor:pointer;transition:color 0.2s;padding:6px 12px;border-radius:20px}
+.nav-links a:hover{color:var(--pink);background:var(--pink-light)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.nav-cart-btn{position:relative;font-size:14px;font-weight:800;color:var(--white);background:var(--pink);border:none;padding:10px 20px;border-radius:24px;cursor:pointer;transition:all 0.2s}
+.nav-cart-btn:hover{background:var(--orange);transform:translateY(-2px)}
+.cart-badge{position:absolute;top:-6px;right:-6px;background:var(--yellow);color:var(--dark);font-size:10px;font-weight:800;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s}
+.cart-badge.show{opacity:1}
+.nav-order{font-size:14px;font-weight:800;color:var(--dark);background:var(--yellow);border:none;padding:10px 20px;border-radius:24px;cursor:pointer;transition:all 0.2s}
+.nav-order:hover{background:var(--orange);color:var(--white);transform:translateY(-2px)}
+
+/* ── APP ── */
+#app{padding-top:71px}
+.page{display:none}
+.page.active{display:block}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--dark);color:var(--white);font-size:13px;font-weight:700;padding:13px 22px;border-radius:28px;transform:translateY(60px);opacity:0;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);pointer-events:none;border:3px solid var(--yellow)}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── CART ── */
+#cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.3s}
+#cart-overlay.open{opacity:1;pointer-events:all}
+#cart-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100vw;z-index:301;background:var(--white);border-left:4px solid var(--yellow);transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column}
+#cart-panel.open{transform:translateX(0)}
+.cart-head{display:flex;justify-content:space-between;align-items:center;padding:24px;border-bottom:3px dashed var(--border)}
+.cart-title{font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--pink)}
+.cart-x{font-size:28px;background:none;border:none;cursor:pointer;color:var(--mid);line-height:1;transition:color 0.2s}
+.cart-x:hover{color:var(--pink)}
+.cart-body{flex:1;overflow-y:auto;padding:20px 24px}
+.cart-empty{text-align:center;padding:56px 0;font-size:16px;color:var(--mid)}
+.cart-empty span{font-size:48px;display:block;margin-bottom:12px}
+.cart-row{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:2px dashed var(--border);gap:12px}
+.cart-item-name{font-weight:800;font-size:15px;color:var(--dark);margin-bottom:3px}
+.cart-item-sub{font-size:12px;color:var(--mid)}
+.cart-item-price{font-weight:800;font-size:16px;color:var(--pink);white-space:nowrap}
+.cart-remove{font-size:11px;font-weight:700;background:none;border:none;color:var(--mid);cursor:pointer;padding:2px 0;display:block;margin-top:4px}
+.cart-remove:hover{color:var(--pink)}
+.cart-foot{padding:20px 24px;border-top:3px dashed var(--border)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cart-total-label{font-size:14px;font-weight:700;color:var(--mid)}
+.cart-total-num{font-family:'Fredoka One',sans-serif;font-size:32px;color:var(--pink)}
+.cart-checkout{width:100%;font-family:'Fredoka One',sans-serif;font-size:20px;background:var(--mint);color:var(--white);border:none;padding:16px;border-radius:16px;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em}
+.cart-checkout:hover{background:var(--blue);transform:translateY(-2px)}
+
+/* ── BUTTONS ── */
+.btn{font-family:'Fredoka One',sans-serif;font-size:18px;border:none;padding:14px 32px;border-radius:28px;cursor:pointer;transition:all 0.2s;display:inline-block;letter-spacing:0.02em}
+.btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.12)}
+.btn-pink{background:var(--pink);color:var(--white)}
+.btn-yellow{background:var(--yellow);color:var(--dark)}
+.btn-mint{background:var(--mint);color:var(--white)}
+.btn-blue{background:var(--blue);color:var(--white)}
+.btn-outline{background:transparent;color:var(--pink);border:3px solid var(--pink)}
+.btn-sm{font-size:14px;padding:10px 22px;border-radius:20px}
+
+/* ── HEADINGS ── */
+.page-header{padding:64px 52px 48px;background:var(--pink-light);border-bottom:4px dashed rgba(255,107,138,0.2);position:relative;overflow:hidden}
+.page-header::after{content:'🍰';position:absolute;right:80px;bottom:-10px;font-size:120px;opacity:0.12;pointer-events:none}
+.page-title{font-family:'Fredoka One',sans-serif;font-size:clamp(40px,6vw,72px);color:var(--pink);line-height:1.05;margin-bottom:10px}
+.page-sub{font-size:16px;color:var(--mid);line-height:1.7;max-width:480px;font-weight:600}
+.breadcrumb{font-size:13px;font-weight:700;color:var(--mid);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:18px;background:var(--white);padding:6px 16px;border-radius:20px;border:2px solid var(--border);transition:all 0.2s}
+.breadcrumb:hover{border-color:var(--pink);color:var(--pink)}
+.sec-label{font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--orange);margin-bottom:32px;display:flex;align-items:center;gap:12px}
+.sec-label::after{content:'';flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--yellow) 0,var(--yellow) 6px,transparent 6px,transparent 12px)}
+.inner{padding:52px}
+.mini-foot{padding:24px 52px;border-top:4px dashed rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;background:var(--yellow-light)}
+.mini-copy{font-size:12px;font-weight:700;color:var(--mid)}
+.mini-back{font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--pink);background:none;border:none;cursor:pointer}
+.mini-back:hover{color:var(--orange)}
+
+/* ── HERO ── */
+.hero{min-height:calc(100vh - 71px);display:flex;align-items:center;position:relative;overflow:hidden;padding:60px 52px}
+.hero-blobs{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:0.35}
+.b1{width:400px;height:400px;background:var(--pink);top:-80px;right:-100px;animation:float1 8s ease-in-out infinite}
+.b2{width:300px;height:300px;background:var(--yellow);bottom:-60px;left:-80px;animation:float2 6s ease-in-out infinite}
+.b3{width:250px;height:250px;background:var(--mint);top:40%;right:30%;animation:float3 10s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,20px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
+@keyframes float3{0%,100%{transform:translate(0,0)}50%{transform:translate(-10px,15px)}}
+.hero-content{position:relative;z-index:1;max-width:620px}
+.hero-tag{font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--pink);margin-bottom:20px;background:var(--pink-light);padding:7px 18px;border-radius:20px;display:inline-block;border:2px solid var(--pink);animation:pop 0.6s cubic-bezier(0.16,1,0.3,1) both 0.1s}
+.hero h1{font-family:'Fredoka One',sans-serif;font-size:clamp(52px,8vw,96px);line-height:0.95;color:var(--dark);margin-bottom:24px;animation:pop 0.6s cubic-bezier(0.16,1,0.3,1) both 0.2s}
+.hero h1 .pink{color:var(--pink)}
+.hero h1 .yellow{color:var(--yellow);-webkit-text-stroke:2px var(--orange)}
+.hero-desc{font-size:18px;line-height:1.7;color:var(--mid);max-width:420px;margin-bottom:40px;font-weight:600;animation:pop 0.6s cubic-bezier(0.16,1,0.3,1) both 0.3s}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;animation:pop 0.6s cubic-bezier(0.16,1,0.3,1) both 0.4s}
+.hero-right{position:absolute;right:64px;top:50%;transform:translateY(-50%);z-index:1;animation:float1 6s ease-in-out infinite}
+.hero-cake{font-size:200px;line-height:1;filter:drop-shadow(0 20px 40px rgba(255,107,138,0.3))}
+.hero-badges{position:absolute;bottom:48px;left:52px;display:flex;gap:16px;z-index:1;flex-wrap:wrap}
+.hero-badge{background:var(--white);border:3px solid var(--border);border-radius:20px;padding:12px 20px;display:flex;align-items:center;gap:10px}
+.badge-num{font-family:'Fredoka One',sans-serif;font-size:28px;color:var(--pink)}
+.badge-text{font-size:12px;font-weight:700;color:var(--mid);line-height:1.3}
+@keyframes pop{from{opacity:0;transform:scale(0.9) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ── TICKER ── */
+.ticker-wrap{background:var(--pink);padding:14px 0;overflow:hidden;border-top:3px solid var(--orange);border-bottom:3px solid var(--orange)}
+.ticker{display:flex;white-space:nowrap;animation:ticker 18s linear infinite}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{font-family:'Fredoka One',sans-serif;font-size:16px;color:var(--white);padding:0 32px;letter-spacing:0.04em}
+.ticker-dot{color:var(--yellow);margin-right:28px}
+
+/* ── PRODUCT CARDS ── */
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.product-card{background:var(--white);border:3px solid var(--border);border-radius:24px;overflow:hidden;transition:all 0.3s;cursor:pointer}
+.product-card:hover{transform:translateY(-8px);box-shadow:0 16px 40px rgba(0,0,0,0.12);border-color:var(--pink)}
+.product-emoji{height:180px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden}
+.product-body{padding:20px}
+.product-name{font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--dark);margin-bottom:6px}
+.product-desc{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:14px;font-weight:600}
+.product-foot{display:flex;justify-content:space-between;align-items:center}
+.product-price{font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--pink)}
+.add-btn{font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--white);background:var(--mint);border:none;padding:8px 18px;border-radius:16px;cursor:pointer;transition:all 0.2s}
+.add-btn:hover{background:var(--blue);transform:scale(1.05)}
+.product-tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em}
+.tag-new{background:var(--mint-light);color:var(--mint)}
+.tag-popular{background:var(--pink-light);color:var(--pink)}
+.tag-gf{background:var(--yellow-light);color:var(--orange)}
+.tag-vegan{background:var(--purple-light);color:var(--purple)}
+
+/* ── HOME ── */
+.home-sec{padding:80px 52px}
+.wobble-title{font-family:'Fredoka One',sans-serif;font-size:clamp(32px,5vw,56px);color:var(--dark);line-height:1.1;margin-bottom:12px}
+.wobble-title .accent{display:inline-block;animation:wobble 3s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.feature-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:24px;overflow:hidden;margin-top:52px}
+.feature-tile{background:var(--white);padding:36px 28px;text-align:center;transition:background 0.3s}
+.feature-tile:hover{background:var(--yellow-light)}
+.feature-icon{font-size:44px;margin-bottom:14px;display:block}
+.feature-title{font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--dark);margin-bottom:8px}
+.feature-desc{font-size:13px;color:var(--mid);line-height:1.6;font-weight:600}
+.testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px}
+.testimonial{background:var(--white);border:3px solid var(--border);border-radius:20px;padding:28px;transition:all 0.3s}
+.testimonial:nth-child(1){border-color:var(--pink)}
+.testimonial:nth-child(2){border-color:var(--mint)}
+.testimonial:nth-child(3){border-color:var(--blue)}
+.testimonial:hover{transform:translateY(-4px)}
+.t-stars{font-size:18px;margin-bottom:12px}
+.t-text{font-size:15px;font-weight:600;color:var(--dark);line-height:1.7;margin-bottom:16px;font-style:italic}
+.t-author{font-size:13px;font-weight:800;color:var(--mid)}
+.cta-banner{background:var(--yellow);padding:72px 52px;text-align:center;border-top:4px dashed var(--orange);border-bottom:4px dashed var(--orange);position:relative;overflow:hidden}
+.cta-banner::before,.cta-banner::after{position:absolute;font-size:80px;opacity:0.2;top:50%;transform:translateY(-50%)}
+.cta-banner::before{content:'🎂';left:40px}
+.cta-banner::after{content:'🧁';right:40px}
+.cta-title{font-family:'Fredoka One',sans-serif;font-size:clamp(32px,5vw,60px);color:var(--dark);margin-bottom:12px;line-height:1.05}
+.cta-desc{font-size:17px;color:var(--mid);margin-bottom:36px;font-weight:700}
+.nl-form{display:flex;max-width:440px;margin:0 auto;gap:10px}
+.nl-form input{flex:1;padding:14px 20px;background:var(--white);border:3px solid var(--border);border-radius:28px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;transition:border-color 0.2s}
+.nl-form input:focus{border-color:var(--pink)}
+.nl-form input::placeholder{color:#bbb}
+
+/* ── MENU PAGE ── */
+.menu-filter-bar{padding:32px 52px 0;display:flex;gap:10px;flex-wrap:wrap}
+.mf{font-family:'Fredoka One',sans-serif;font-size:16px;padding:10px 24px;border-radius:24px;border:3px solid var(--border);background:var(--white);color:var(--mid);cursor:pointer;transition:all 0.2s}
+.mf:hover,.mf.active{border-color:var(--pink);background:var(--pink);color:var(--white)}
+.menu-sec{padding:40px 52px}
+.menu-sec-title{font-family:'Fredoka One',sans-serif;font-size:36px;color:var(--dark);margin-bottom:28px;display:flex;align-items:center;gap:12px}
+
+/* ── CUSTOM CAKES ── */
+.cake-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
+.cake-step{background:var(--white);border:3px solid var(--border);border-radius:20px;padding:32px 24px;text-align:center;position:relative;transition:all 0.3s}
+.cake-step:hover{border-color:var(--pink);transform:translateY(-4px)}
+.step-num{font-family:'Fredoka One',sans-serif;font-size:48px;color:var(--pink-light);position:absolute;top:16px;right:20px;line-height:1}
+.step-icon{font-size:40px;margin-bottom:14px;display:block}
+.step-title{font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--dark);margin-bottom:8px}
+.step-desc{font-size:13px;color:var(--mid);line-height:1.6;font-weight:600}
+.flavor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}
+.flavor-card{border:3px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--white)}
+.flavor-card:hover{border-color:var(--pink);background:var(--pink-light);transform:scale(1.03)}
+.flavor-emoji{font-size:36px;display:block;margin-bottom:8px}
+.flavor-name{font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--dark)}
+.flavor-desc{font-size:12px;color:var(--mid);font-weight:600;margin-top:4px}
+
+/* ── FAQ ── */
+.faq-item{background:var(--white);border:3px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;transition:border-color 0.3s}
+.faq-item:hover{border-color:var(--pink)}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;cursor:pointer;gap:16px}
+.faq-q-text{font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--dark)}
+.faq-tog{font-size:24px;color:var(--pink);flex-shrink:0}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+.faq-a.open{max-height:300px}
+.faq-a-inner{padding:0 24px 20px;font-size:15px;line-height:1.8;color:var(--mid);font-weight:600}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.info-bubble{background:var(--white);border:3px solid var(--border);border-radius:20px;padding:28px;margin-bottom:16px;transition:border-color 0.3s}
+.info-bubble:hover{border-color:var(--pink)}
+.info-label{font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--pink);margin-bottom:8px}
+.info-val{font-size:16px;font-weight:700;color:var(--dark);line-height:1.6}
+.hours-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:2px dashed var(--border);font-size:15px}
+.hours-row:last-child{border:none}
+.hours-day{font-weight:800;color:var(--dark)}
+.hours-time{font-weight:600;color:var(--mid)}
+
+/* ── FOOTER ── */
+.site-footer{background:var(--dark);padding:64px 52px 36px}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-logo{font-family:'Fredoka One',sans-serif;font-size:26px;color:var(--yellow);margin-bottom:12px}
+.footer-logo span{color:var(--pink)}
+.footer-tagline{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;font-weight:600}
+.footer-col-title{font-family:'Fredoka One',sans-serif;font-size:18px;color:var(--yellow);margin-bottom:18px}
+.footer-links{list-style:none}
+.footer-links li{margin-bottom:10px}
+.footer-links a{font-size:13px;color:rgba(255,255,255,0.55);text-decoration:none;cursor:pointer;transition:color 0.2s;font-weight:700}
+.footer-links a:hover{color:var(--pink)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:32px;border-top:3px dashed rgba(255,255,255,0.1)}
+.footer-copy{font-size:12px;color:rgba(255,255,255,0.3);font-weight:700}
+
+@media(max-width:960px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  .hero,.home-sec,.cta-banner,.inner{padding:40px 20px 60px}
+  .hero-right,.hero-badges{display:none}
+  .feature-strip,.testimonial-grid{grid-template-columns:1fr}
+  .products-grid{grid-template-columns:1fr 1fr}
+  .cake-steps{grid-template-columns:1fr 1fr}
+  .flavor-grid{grid-template-columns:1fr 1fr}
+  .contact-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr 1fr;gap:28px}
+  .page-header,.menu-filter-bar,.menu-sec,.mini-foot{padding-left:20px;padding-right:20px}
+}
+@media(max-width:540px){
+  .products-grid,.cake-steps,.flavor-grid{grid-template-columns:1fr}
+  .hero h1{font-size:48px}
+  .nl-form{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="goTo('home')">Sprinkle <span>&</span> Co.</div>
+  <ul class="nav-links">
+    <li><a onclick="goTo('menu')">Menu</a></li>
+    <li><a onclick="goTo('custom')">Custom Cakes</a></li>
+    <li><a onclick="goTo('catering')">Catering</a></li>
+    <li><a onclick="goTo('about')">About</a></li>
+    <li><a onclick="goTo('contact')">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+<button class="nav-cart-btn" onclick="openCart()" style="font-family: 'Fredoka One', sans-serif;">
+    🛒 Basket     <button class="nav-order" onclick="goTo('order')" style="font-family: 'Fredoka One', sans-serif;">
+    Order Online!
+  </button>
+  </div>
+</nav>
+
+<div id="app">
+
+<!-- ══ HOME ══ -->
+<div class="page active" id="page-home">
+
+  <section class="hero">
+    <div class="hero-blobs">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-tag">🎉 Now Open in Jacksonville, FL</div>
+      <h1>Life is too<br/><span class="pink">short</span> for<br/><span class="yellow">boring</span> cake</h1>
+      <p class="hero-desc">We make ridiculously good, stupidly fun baked goods. Cakes, cookies, croissants, and everything in between — baked fresh every single morning.</p>
+      <div class="hero-actions">
+        <button class="btn btn-pink" onclick="goTo('menu')">See the Menu 🍰</button>
+        <button class="btn btn-yellow" onclick="goTo('order')">Order Now!</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-cake">🎂</div>
+    </div>
+    <div class="hero-badges">
+      <div class="hero-badge"><span class="badge-num">🌅</span><div class="badge-text">Baked fresh<br/>every morning</div></div>
+      <div class="hero-badge"><span class="badge-num">❤️</span><div class="badge-text">Made with<br/>real butter</div></div>
+      <div class="hero-badge"><span class="badge-num">✨</span><div class="badge-text">Custom cakes<br/>available</div></div>
+    </div>
+  </section>
+
+  <div class="ticker-wrap"><div class="ticker">
+    <span class="ticker-item"><span class="ticker-dot">🧁</span>Freshly baked every morning</span>
+    <span class="ticker-item"><span class="ticker-dot">🎂</span>Custom cakes with 48hr notice</span>
+    <span class="ticker-item"><span class="ticker-dot">🍪</span>Gluten-free options available</span>
+    <span class="ticker-item"><span class="ticker-dot">🥐</span>Croissants out at 7am sharp</span>
+    <span class="ticker-item"><span class="ticker-dot">🎉</span>Catering for all occasions</span>
+    <span class="ticker-item"><span class="ticker-dot">💛</span>Open Tue–Sun, 7am–5pm</span>
+    <span class="ticker-item"><span class="ticker-dot">🧁</span>Freshly baked every morning</span>
+    <span class="ticker-item"><span class="ticker-dot">🎂</span>Custom cakes with 48hr notice</span>
+    <span class="ticker-item"><span class="ticker-dot">🍪</span>Gluten-free options available</span>
+    <span class="ticker-item"><span class="ticker-dot">🥐</span>Croissants out at 7am sharp</span>
+    <span class="ticker-item"><span class="ticker-dot">🎉</span>Catering for all occasions</span>
+    <span class="ticker-item"><span class="ticker-dot">💛</span>Open Tue–Sun, 7am–5pm</span>
+  </div></div>
+
+  <section class="home-sec" style="background:var(--pink-light)">
+    <div class="sec-label">⭐ Today's Picks</div>
+    <div class="wobble-title">Hot out of the oven <span class="accent">right now</span></div>
+    <p style="font-size:16px;color:var(--mid);margin-bottom:8px;font-weight:700">These are flying off the counter — grab them while they last!</p>
+    <div style="margin-top:36px" class="products-grid" id="home-specials"></div>
+    <div style="text-align:center;margin-top:40px"><button class="btn btn-pink" onclick="goTo('menu')">See Everything We Make 👀</button></div>
+  </section>
+
+  <section class="home-sec">
+    <div class="sec-label">💛 Why We're Different</div>
+    <div class="wobble-title">We put <span class="accent">love</span> (and butter) in everything</div>
+    <div class="feature-strip">
+      <div class="feature-tile"><span class="feature-icon">🌅</span><div class="feature-title">Baked Fresh Daily</div><div class="feature-desc">Everything is made from scratch that morning. No frozen dough, no shortcuts.</div></div>
+      <div class="feature-tile"><span class="feature-icon">🧈</span><div class="feature-title">Real Ingredients</div><div class="feature-desc">Real butter, local eggs, and the good vanilla. You can taste the difference.</div></div>
+      <div class="feature-tile"><span class="feature-icon">🎨</span><div class="feature-title">Made to Order</div><div class="feature-desc">Custom cakes, custom flavors, custom everything. Just tell us your dream.</div></div>
+      <div class="feature-tile"><span class="feature-icon">💖</span><div class="feature-title">Made with Heart</div><div class="feature-desc">Family-run since 2014. We know our regulars by name and by order.</div></div>
+    </div>
+  </section>
+
+  <section class="home-sec" style="background:var(--mint-light)">
+    <div class="sec-label">💬 Happy Customers</div>
+    <div class="wobble-title">People are <span class="accent">obsessed</span> (their words!)</div>
+    <div class="testimonial-grid">
+      <div class="testimonial"><div class="t-stars">⭐⭐⭐⭐⭐</div><p class="t-text">"The birthday cake they made for my daughter had us all in tears. The sprinkles alone were a work of art. We will never go anywhere else."</p><div class="t-author">— Amanda L., Jacksonville</div></div>
+      <div class="testimonial"><div class="t-stars">⭐⭐⭐⭐⭐</div><p class="t-text">"I drove 40 minutes just for the croissants. Worth every mile. I now come every Saturday and bring extra bags."</p><div class="t-author">— Marcus T., Orange Park</div></div>
+      <div class="testimonial"><div class="t-stars">⭐⭐⭐⭐⭐</div><p class="t-text">"Their gluten-free options actually taste amazing, which as a celiac is basically a miracle. The GF chocolate cake is INCREDIBLE."</p><div class="t-author">— Jenny K., Fleming Island</div></div>
+    </div>
+  </section>
+
+  <div class="cta-banner">
+    <h2 class="cta-title">Got a special occasion coming up? 🎉</h2>
+    <p class="cta-desc">Let us make the cake. Custom orders open — we make dreams (and buttercream) come true!</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-pink" onclick="goTo('custom')">Design Your Cake 🎨</button>
+      <button class="btn btn-mint" onclick="goTo('contact')">Talk to Us!</button>
+    </div>
+  </div>
+
+  <section class="home-sec">
+    <div class="sec-label">✉️ Stay in the Loop</div>
+    <div style="text-align:center;max-width:520px;margin:0 auto">
+      <div class="wobble-title" style="text-align:center">Weekly specials.<br/><span class="accent">No spam.</span> Promise!</div>
+      <p style="font-size:16px;color:var(--mid);margin-bottom:28px;margin-top:12px;font-weight:700">Get first dibs on seasonal flavors and flash sales. We email once a week, max.</p>
+      <div class="nl-form"><input type="email" id="nl-home" placeholder="your@email.com"/><button class="btn btn-pink" onclick="subscribe('nl-home')">Subscribe 💌</button></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div><div class="footer-logo">Sprinkle <span>&</span> Co.</div><p class="footer-tagline">Your neighborhood bakery in Jacksonville, FL. Baking joy since 2014.<br/>Open Tuesday–Sunday, 7am–5pm.</p></div>
+      <div><div class="footer-col-title">Bakery</div><ul class="footer-links"><li><a onclick="goTo('menu')">Menu</a></li><li><a onclick="goTo('order')">Order Online</a></li><li><a onclick="goTo('custom')">Custom Cakes</a></li><li><a onclick="goTo('catering')">Catering</a></li></ul></div>
+      <div><div class="footer-col-title">Info</div><ul class="footer-links"><li><a onclick="goTo('about')">About Us</a></li><li><a onclick="goTo('faq')">FAQ</a></li><li><a onclick="goTo('contact')">Contact</a></li></ul></div>
+      <div><div class="footer-col-title">Find Us</div><ul class="footer-links"><li><a onclick="showToast('2240 Oak St, Jacksonville FL')">2240 Oak Street</a></li><li><a onclick="showToast('(904) 555-0134')">904-555-0134</a></li><li><a onclick="showToast('hello@sprinkleandco.com')">hello@sprinkleandco.com</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Sprinkle & Co. · Made with 💛 in Jacksonville</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ MENU ══ -->
+<div class="page" id="page-menu">
+  <div class="page-header" style="background:var(--yellow-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title">The Menu 🍰</div><p class="page-sub">Everything made fresh that morning. Come early for best selection!</p></div>
+  <div class="menu-filter-bar">
+    <button class="mf active" onclick="filterMenu(this,'all')">All ✨</button>
+    <button class="mf" onclick="filterMenu(this,'cakes')">Cakes 🎂</button>
+    <button class="mf" onclick="filterMenu(this,'pastry')">Pastries 🥐</button>
+    <button class="mf" onclick="filterMenu(this,'cookies')">Cookies 🍪</button>
+    <button class="mf" onclick="filterMenu(this,'drinks')">Drinks ☕</button>
+    <button class="mf" onclick="filterMenu(this,'gf')">Gluten Free 🌾</button>
+  </div>
+  <div id="menu-sections"></div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ ORDER ══ -->
+<div class="page" id="page-order">
+  <div class="page-header" style="background:var(--mint-light);"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title">Order Online! 🛒</div><p class="page-sub">Order by 10am for same-day pickup. After 10am? We'll have it ready tomorrow!</p></div>
+  <div class="menu-filter-bar">
+    <button class="mf active" onclick="filterOrder(this,'all')">All ✨</button>
+    <button class="mf" onclick="filterOrder(this,'cakes')">Cakes 🎂</button>
+    <button class="mf" onclick="filterOrder(this,'pastry')">Pastries 🥐</button>
+    <button class="mf" onclick="filterOrder(this,'cookies')">Cookies 🍪</button>
+    <button class="mf" onclick="filterOrder(this,'drinks')">Drinks ☕</button>
+  </div>
+  <div id="order-sections"></div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ CUSTOM ══ -->
+<div class="page" id="page-custom">
+  <div class="page-header" style="background:var(--purple-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title" style="color:var(--purple)">Custom Cakes 🎨</div><p class="page-sub">Dream it, we'll bake it. Every custom cake is completely one-of-a-kind.</p></div>
+  <div class="inner">
+    <div class="sec-label">🎯 How it Works</div>
+    <div class="cake-steps">
+      <div class="cake-step"><div class="step-num">1</div><span class="step-icon">📝</span><div class="step-title">Tell Us Your Dream</div><div class="step-desc">Fill out our order form or give us a call. Tell us the occasion, size, and any inspo you have!</div></div>
+      <div class="cake-step"><div class="step-num">2</div><span class="step-icon">🍓</span><div class="step-title">Pick Your Flavors</div><div class="step-desc">Choose from our 12+ cake and filling flavors — or mix and match. We'll guide you!</div></div>
+      <div class="cake-step"><div class="step-num">3</div><span class="step-icon">🎨</span><div class="step-title">We Design & Bake</div><div class="step-desc">Our decorators get to work. We'll send a preview photo 24hrs before pickup.</div></div>
+      <div class="cake-step"><div class="step-num">4</div><span class="step-icon">🎉</span><div class="step-title">Pick Up & Celebrate!</div><div class="step-desc">Come grab your masterpiece. We'll box it up so it travels safely.</div></div>
+    </div>
+    <div style="margin-top:64px">
+      <div class="sec-label">🍓 Our Cake Flavors</div>
+      <div class="flavor-grid" id="flavor-grid"></div>
+    </div>
+    <div style="margin-top:64px;background:var(--yellow-light);border:3px solid var(--yellow);border-radius:24px;padding:40px">
+      <div class="wobble-title" style="margin-bottom:16px">Ready to order? <span class="accent">Let's go! 🎂</span></div>
+      <p style="font-size:16px;color:var(--mid);margin-bottom:28px;font-weight:700">Custom cakes start at $55 and require 48 hours notice. Tiered cakes need at least 1 week. <strong style="color:var(--pink)">We're fully booked on weekends — book early!</strong></p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="goTo('contact')">Start My Order 🎉</button>
+        <button class="btn btn-yellow" onclick="showToast('Calling (904) 555-0134...')">Call Us: 904-555-0134</button>
+      </div>
+    </div>
+  </div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ CATERING ══ -->
+<div class="page" id="page-catering">
+  <div class="page-header" style="background:var(--blue-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title" style="color:var(--blue)">Catering 🎉</div><p class="page-sub">We bring the bakery to your party. Corporate breakfasts, baby showers, weddings — you name it!</p></div>
+  <div class="inner">
+    <div class="sec-label">📦 Our Packages</div>
+    <div class="products-grid" id="catering-grid"></div>
+    <div style="margin-top:52px;background:var(--pink-light);border:3px solid var(--pink);border-radius:24px;padding:40px">
+      <div class="wobble-title" style="margin-bottom:12px">Ready to book? <span class="accent">We'd love to help! 🥳</span></div>
+      <p style="font-size:16px;color:var(--mid);margin-bottom:28px;font-weight:700">We need at least 72 hours notice for catering. Weekend dates book up fast — reach out early!</p>
+      <button class="btn btn-pink" onclick="goTo('contact')">Get a Quote 🎉</button>
+    </div>
+  </div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ ABOUT ══ -->
+<div class="page" id="page-about">
+  <div class="page-header" style="background:var(--yellow-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title">About Us 💛</div><p class="page-sub">A family, a dream, and a really good buttercream recipe.</p></div>
+  <div class="inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
+      <div>
+        <div class="sec-label">Our Story 🧁</div>
+        <h2 style="font-family:'Fredoka One',sans-serif;font-size:36px;color:var(--dark);margin-bottom:20px;line-height:1.2">Started in a kitchen.<br/><span style="color:var(--pink)">Grown with love.</span></h2>
+        <p style="font-size:16px;color:var(--mid);line-height:1.8;margin-bottom:16px;font-weight:600">Sprinkle & Co. started in 2014 when sisters Rosa and Maya Velez decided to turn their Sunday baking sessions into something more. They started with a farmers market table and 40 cookies. They sold out in 45 minutes.</p>
+        <p style="font-size:16px;color:var(--mid);line-height:1.8;margin-bottom:16px;font-weight:600">Ten years later, they have a storefront on Oak Street, a team of seven, and still use their grandmother's buttercream recipe. It hasn't changed once.</p>
+        <p style="font-size:16px;color:var(--mid);line-height:1.8;font-weight:600">They believe baked goods should make people happy — not just satisfied. Every item on the menu has to pass the "does this make you smile?" test before it goes on the shelf.</p>
+        <br/>
+        <button class="btn btn-pink" onclick="goTo('contact')">Come Say Hi! 👋</button>
+      </div>
+      <div style="background:var(--pink-light);border-radius:32px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;border:4px dashed var(--pink);font-size:120px">🧁</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px">
+      <div class="info-bubble" style="text-align:center;border-color:var(--pink)"><div style="font-size:52px;margin-bottom:12px">2014</div><div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--dark)">Founded</div><div style="font-size:14px;color:var(--mid);font-weight:600">at the Riverside Farmers Market</div></div>
+      <div class="info-bubble" style="text-align:center;border-color:var(--mint)"><div style="font-size:52px;margin-bottom:12px">7</div><div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--dark)">Team Members</div><div style="font-size:14px;color:var(--mid);font-weight:600">all passionate about butter</div></div>
+      <div class="info-bubble" style="text-align:center;border-color:var(--blue)"><div style="font-size:52px;margin-bottom:12px">500+</div><div style="font-family:'Fredoka One',sans-serif;font-size:20px;color:var(--dark)">Custom Cakes</div><div style="font-size:14px;color:var(--mid);font-weight:600">made since opening</div></div>
+    </div>
+  </div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ FAQ ══ -->
+<div class="page" id="page-faq">
+  <div class="page-header" style="background:var(--blue-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title" style="color:var(--blue)">Got Questions? 🙋</div></div>
+  <div class="inner" style="max-width:780px"><div id="faq-list"></div></div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div class="page" id="page-contact">
+  <div class="page-header" style="background:var(--mint-light)"><div class="breadcrumb" onclick="goTo('home')">← Home</div><div class="page-title" style="color:var(--mint)">Say Hello! 👋</div><p class="page-sub">We love hearing from you. We reply fast — usually within a few hours!</p></div>
+  <div class="inner">
+    <div class="contact-grid">
+      <div>
+        <div class="sec-label">📬 Send a Message</div>
+        <div style="background:var(--white);border:3px solid var(--border);border-radius:24px;padding:32px">
+          <div style="margin-bottom:18px"><label style="font-size:13px;font-weight:800;color:var(--pink);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Your Name</label><input style="width:100%;padding:13px 18px;border:3px solid var(--border);border-radius:16px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;transition:border-color 0.2s;background:var(--white)" placeholder="Rosa Velez" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'"/></div>
+          <div style="margin-bottom:18px"><label style="font-size:13px;font-weight:800;color:var(--pink);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Email</label><input type="email" style="width:100%;padding:13px 18px;border:3px solid var(--border);border-radius:16px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;transition:border-color 0.2s;background:var(--white)" placeholder="you@email.com" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'"/></div>
+          <div style="margin-bottom:18px"><label style="font-size:13px;font-weight:800;color:var(--pink);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">What's it about?</label>
+          <select style="width:100%;padding:13px 18px;border:3px solid var(--border);border-radius:16px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;background:var(--white);color:var(--dark);cursor:pointer">
+            <option>Custom Cake Order 🎂</option><option>Catering Inquiry 🎉</option><option>General Question 💬</option><option>Feedback 💛</option><option>Wholesale 📦</option>
+          </select></div>
+          <div style="margin-bottom:24px"><label style="font-size:13px;font-weight:800;color:var(--pink);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Message</label><textarea style="width:100%;padding:13px 18px;border:3px solid var(--border);border-radius:16px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;resize:none;height:130px;transition:border-color 0.2s;background:var(--white)" placeholder="Tell us everything!" onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border)'"></textarea></div>
+          <button class="btn btn-pink" onclick="showToast('Message sent! We\'ll reply within a few hours 💛')">Send It! 💌</button>
+        </div>
+      </div>
+      <div>
+        <div class="sec-label">📍 Find Us</div>
+        <div class="info-bubble"><div class="info-label">📍 Address</div><div class="info-val">2240 Oak Street<br/>Jacksonville, FL 32205<br/>Avondale neighborhood</div></div>
+        <div class="info-bubble"><div class="info-label">📞 Phone</div><div class="info-val" style="color:var(--pink)">(904) 555-0134</div></div>
+        <div class="info-bubble"><div class="info-label">✉️ Email</div><div class="info-val" style="color:var(--pink)">hello@sprinkleandco.com</div></div>
+        <div class="info-bubble">
+          <div class="info-label">🕐 Hours</div>
+          <div class="hours-row"><span class="hours-day">Tue – Fri</span><span class="hours-time">7:00am – 5:00pm</span></div>
+          <div class="hours-row"><span class="hours-day">Saturday</span><span class="hours-time">7:00am – 4:00pm</span></div>
+          <div class="hours-row"><span class="hours-day">Sunday</span><span class="hours-time">8:00am – 2:00pm</span></div>
+          <div class="hours-row"><span class="hours-day" style="color:var(--mid)">Monday</span><span class="hours-time" style="color:#bbb">Closed 😴</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mini-foot"><div class="mini-copy">© 2025 Sprinkle & Co.</div><button class="mini-back" onclick="goTo('home')">← Home</button></div>
+</div>
+
+</div>
+
+<!-- CART -->
+<div id="cart-overlay" onclick="closeCart()"></div>
+<div id="cart-panel">
+  <div class="cart-head"><div class="cart-title">🛒 Your Basket</div><button class="cart-x" onclick="closeCart()">×</button></div>
+  <div class="cart-body" id="cart-body"><div class="cart-empty"><span>🧺</span>Your basket is empty!<br/>Add something yummy!</div></div>
+  <div class="cart-foot">
+    <div class="cart-total-row"><span class="cart-total-label">Total</span><span class="cart-total-num" id="cart-total">$0.00</span></div>
+    <button class="cart-checkout" onclick="checkout()">Checkout! 🎉</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const ALL_ITEMS = [
+  {id:1,  name:'Celebration Layer Cake',  emoji:'🎂', desc:'Three layers of fluffy vanilla sponge, rainbow sprinkle filling, pink vanilla buttercream.',  price:52, cat:'cakes',   tags:['popular']},
+  {id:2,  name:'Chocolate Fudge Cake',    emoji:'🍫', desc:'Rich chocolate layers, dark chocolate ganache, whipped chocolate buttercream. Dangerously good.', price:48, cat:'cakes',   tags:[]},
+  {id:3,  name:'Lemon Drizzle Loaf',      emoji:'🍋', desc:'Zingy, fluffy, topped with lemon glaze and candied zest. A classic done perfectly.',           price:22, cat:'cakes',   tags:['vegan','gf']},
+  {id:4,  name:'Strawberry Shortcake',    emoji:'🍓', desc:'Fresh Florida strawberries, whipped cream, light sponge. Summer in a slice.',                   price:38, cat:'cakes',   tags:['popular']},
+  {id:5,  name:'Butter Croissant',        emoji:'🥐', desc:'Flaky, buttery, 27 layers. The kind you only get at a real bakery. Fresh from 7am.',            price:4.50, cat:'pastry', tags:['popular']},
+  {id:6,  name:'Pain au Chocolat',        emoji:'🍫', desc:'Double chocolate croissant. Two rods of dark chocolate, perfectly laminated dough.',             price:5,  cat:'pastry',  tags:[]},
+  {id:7,  name:'Cinnamon Roll',           emoji:'🌀', desc:'Giant, gooey, pulled-apart roll with brown sugar filling and cream cheese frosting on top.',     price:5.50, cat:'pastry', tags:['new']},
+  {id:8,  name:'Blueberry Muffin',        emoji:'🫐', desc:'Packed with fresh Florida blueberries, crunchy sugar top, moist inside every time.',            price:3.50, cat:'pastry', tags:['gf']},
+  {id:9,  name:'Sprinkle Sugar Cookie',   emoji:'🍪', desc:'Thick, soft-baked sugar cookie with rainbow sprinkles. Our most iconic item.',                  price:3,  cat:'cookies', tags:['popular']},
+  {id:10, name:'Chocolate Chip Cookie',   emoji:'🍪', desc:'Three types of chocolate, flaky sea salt, crispy edge and gooey center. Eaten warm.',           price:3,  cat:'cookies', tags:[]},
+  {id:11, name:'Snickerdoodle',           emoji:'🍪', desc:'Chewy cinnamon-sugar coated cookie. Crispy edges, soft middle. Addictive.',                     price:3,  cat:'cookies', tags:['vegan']},
+  {id:12, name:'GF Brownie',              emoji:'🟫', desc:'Rich, fudgy, completely gluten-free brownie. Nobody can tell. Walnuts optional.',               price:4.50, cat:'cookies', tags:['gf']},
+  {id:13, name:'Drip Coffee',             emoji:'☕', desc:'House blend from Bold Bean, Jacksonville. Single origin rotation, brewed fresh every hour.',    price:3.50, cat:'drinks', tags:[]},
+  {id:14, name:'Matcha Latte',            emoji:'🍵', desc:'Ceremonial grade matcha, oat milk, lightly sweetened. Served hot or iced.',                    price:5.50, cat:'drinks', tags:['vegan']},
+  {id:15, name:'Strawberry Lemonade',     emoji:'🍓', desc:'Fresh-squeezed lemonade blended with strawberry purée. Seasonal and always perfect.',           price:5,  cat:'drinks',  tags:['vegan','gf','new']},
+];
+
+const CATERING_PKGS = [
+  {emoji:'🌅', bg:'#FFF8D6', name:'Morning Spread', desc:'Perfect for office breakfasts and team meetings. Assorted pastries, muffins, and coffee for the whole team.', price:'From $65', includes:'Serves 8–12 · Pastry box (12 pcs) · Coffee for 10'},
+  {emoji:'🎂', bg:'#FFE4EA', name:'Party Package', desc:'Birthdays, baby showers, bridal parties — we cover the sweet table so you can focus on celebrating!', price:'From $120', includes:'Serves 15–20 · 1 decorated cake · 2 doz cookies · Balloons'},
+  {emoji:'🏢', bg:'#E0EEFF', name:'Corporate Box', desc:'Impress your clients. Elegant branded boxes filled with our best pastries, individually wrapped.', price:'From $200', includes:'Serves 25+ · Branded boxes · Variety assortment · Delivery incl.'},
+  {emoji:'💒', bg:'#F3E6FF', name:'Wedding Dessert Bar', desc:'Custom dessert tables for your big day. Cake, cookies, macarons — all matching your theme and colors.', price:'Custom pricing', includes:'Full consultation · Custom designs · Delivery & setup'},
+];
+
+const FLAVORS = [
+  {emoji:'🍦', name:'Classic Vanilla', desc:'Our most popular — silky and sweet'},
+  {emoji:'🍫', name:'Dark Chocolate', desc:'Rich and intense, never too sweet'},
+  {emoji:'🍋', name:'Meyer Lemon', desc:'Bright, tangy, totally refreshing'},
+  {emoji:'🍓', name:'Strawberry', desc:'Fresh Florida strawberry — so summery'},
+  {emoji:'🥜', name:'Peanut Butter', desc:'Creamy and nutty with a salty kick'},
+  {emoji:'🍰', name:'Red Velvet', desc:'Cream cheese frosting is non-negotiable'},
+  {emoji:'🌿', name:'Matcha', desc:'Earthy and elegant — not too sweet'},
+  {emoji:'🎃', name:'Cinnamon Spice', desc:'Warm spices, perfect for fall'},
+  {emoji:'🥥', name:'Coconut Lime', desc:'Tropical and light — our summer special'},
+];
+
+const FAQS = [
+  {q:'What time do items sell out?', a:'Croissants and cinnamon rolls are usually gone by 10am on weekends. Popular cakes can go fast by noon. We recommend ordering online by 10am the day before for guaranteed availability!'},
+  {q:'How do I order a custom cake?', a:'Fill out the contact form, give us a call, or come in! We need at least 48 hours for simple custom cakes, and 1 week for tiered or wedding cakes. We\'ll talk through flavors, design, and any dietary needs. Custom cakes start at $55.'},
+  {q:'Do you have gluten-free options?', a:'Yes! Our GF brownie, lemon drizzle loaf, and blueberry muffin are gluten-free. We also do GF custom cakes with advance notice. Our kitchen does handle gluten, so we cannot guarantee zero cross-contact for severe allergies.'},
+  {q:'Do you offer vegan options?', a:'We have several vegan items including our lemon drizzle loaf, snickerdoodle cookie, and matcha latte. Custom vegan cakes are available with advance notice — just ask!'},
+  {q:'Can I order for same-day pickup?', a:'Yes! Order online before 10am for same-day pickup. Orders placed after 10am will be ready the next open day. We\'ll send a text when your order is ready 🎉'},
+  {q:'Do you deliver?', a:'We offer delivery within 10 miles of Oak Street for a $15 flat fee. Delivery is available Tuesday through Friday for orders over $30. Weekend delivery for custom orders and catering only.'},
+  {q:'Can I come in and just browse?', a:'Of course! Walk-ins are always welcome. We\'d love to see you. Just note that our most popular items sell out early on weekends, so come by before noon to get the best selection!'},
+];
+
+let cart = [];
+let _toastTimer;
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const t = document.getElementById('page-' + page);
+  if (t) { t.classList.add('active'); window.scrollTo({top:0,behavior:'instant'}); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function addToCart(id) {
+  const item = ALL_ITEMS.find(i => i.id === id);
+  if (!item) return;
+  const ex = cart.find(c => c.id === id);
+  if (ex) ex.qty++; else cart.push({...item, qty:1});
+  renderCart();
+  showToast(item.name + ' added to basket! 🧁');
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  renderCart();
+}
+
+function renderCart() {
+  const count = cart.reduce((s,i) => s + i.qty, 0);
+  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const badge = document.getElementById('cart-badge');
+  badge.textContent = count;
+  badge.classList.toggle('show', count > 0);
+  document.getElementById('cart-total').textContent = '$' + total.toFixed(2);
+  const body = document.getElementById('cart-body');
+  if (!cart.length) { body.innerHTML = '<div class="cart-empty"><span>🧺</span>Your basket is empty!<br/>Add something yummy!</div>'; return; }
+  body.innerHTML = cart.map(i => `<div class="cart-row"><div><div class="cart-item-name">${i.name}</div><div class="cart-item-sub">${i.emoji}${i.qty > 1 ? ' × ' + i.qty : ''}</div><button class="cart-remove" onclick="removeFromCart(${i.id})">Remove</button></div><div class="cart-item-price">$${(i.price*i.qty).toFixed(2)}</div></div>`).join('');
+}
+
+function openCart() { document.getElementById('cart-overlay').classList.add('open'); document.getElementById('cart-panel').classList.add('open'); }
+function closeCart() { document.getElementById('cart-overlay').classList.remove('open'); document.getElementById('cart-panel').classList.remove('open'); }
+function checkout() {
+  if (!cart.length) { showToast('Your basket is empty!'); return; }
+  cart = []; renderCart(); closeCart();
+  showToast('Order placed! See you soon 🎉');
+}
+
+function subscribe(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.value.includes('@')) { showToast('Enter a valid email!'); return; }
+  el.value = ''; showToast('Subscribed! Sweet emails incoming 💌');
+}
+
+function tagBadges(tags) {
+  const map = {new:'tag-new',popular:'tag-popular',gf:'tag-gf',vegan:'tag-vegan'};
+  const labels = {new:'New!',popular:'Popular',gf:'Gluten Free',vegan:'Vegan'};
+  return tags.map(t => `<span class="product-tag ${map[t]}">${labels[t]}</span>`).join(' ');
+}
+
+function productCard(item, addBtn) {
+  const colors = {'cakes':'#FFF8D6','pastry':'#FFE4EA','cookies':'#E0EEFF','drinks':'#E4F7E6'};
+  const bg = colors[item.cat] || '#FFF';
+  const btn = addBtn ? `<button class="add-btn" onclick="event.stopPropagation();addToCart(${item.id})">Add 🛒</button>` : '';
+  return `<div class="product-card" onclick="goTo('order')">
+    <div class="product-emoji" style="background:${bg}">${item.emoji}</div>
+    <div class="product-body">
+      ${item.tags.length ? `<div>${tagBadges(item.tags)}</div>` : ''}
+      <div class="product-name">${item.name}</div>
+      <div class="product-desc">${item.desc}</div>
+      <div class="product-foot"><div class="product-price">$${item.price.toFixed(2)}</div>${btn}</div>
+    </div>
+  </div>`;
+}
+
+function buildMenuSections(containerId, withAdd) {
+  const cats = [{id:'cakes',label:'Cakes & Loaves 🎂'},{id:'pastry',label:'Pastries 🥐'},{id:'cookies',label:'Cookies & Bars 🍪'},{id:'drinks',label:'Drinks ☕'}];
+  document.getElementById(containerId).innerHTML = cats.map(cat => {
+    const items = ALL_ITEMS.filter(i => i.cat === cat.id);
+    return `<div class="menu-sec" data-cat="${cat.id}"><div class="menu-sec-title">${cat.label}</div><div class="products-grid">${items.map(i => productCard(i, withAdd)).join('')}</div></div>`;
+  }).join('');
+}
+
+function filterMenu(btn, cat) {
+  document.querySelectorAll('#page-menu .mf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (cat === 'gf') {
+    const items = ALL_ITEMS.filter(i => i.tags.includes('gf'));
+    document.getElementById('menu-sections').innerHTML = `<div class="menu-sec"><div class="menu-sec-title">Gluten Free Options 🌾</div><div class="products-grid">${items.map(i => productCard(i,false)).join('')}</div></div>`;
+    return;
+  }
+  const secs = document.querySelectorAll('#menu-sections .menu-sec');
+  secs.forEach(s => s.style.display = (cat === 'all' || s.dataset.cat === cat) ? 'block' : 'none');
+}
+
+function filterOrder(btn, cat) {
+  document.querySelectorAll('#page-order .mf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const secs = document.querySelectorAll('#order-sections .menu-sec');
+  secs.forEach(s => s.style.display = (cat === 'all' || s.dataset.cat === cat) ? 'block' : 'none');
+}
+
+function buildHomeSpecials() {
+  const picks = [1,5,9];
+  document.getElementById('home-specials').innerHTML = picks.map(id => productCard(ALL_ITEMS.find(i=>i.id===id), true)).join('');
+}
+
+function buildCateringGrid() {
+  document.getElementById('catering-grid').innerHTML = CATERING_PKGS.map(p => `
+    <div class="product-card">
+      <div class="product-emoji" style="background:${p.bg};font-size:60px">${p.emoji}</div>
+      <div class="product-body">
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--mint);margin-bottom:14px">✓ ${p.includes}</div>
+        <div class="product-foot"><div class="product-price" style="font-size:18px">${p.price}</div><button class="add-btn" style="background:var(--blue)" onclick="goTo('contact')">Enquire</button></div>
+      </div>
+    </div>`).join('');
+}
+
+function buildFlavorGrid() {
+  document.getElementById('flavor-grid').innerHTML = FLAVORS.map(f => `
+    <div class="flavor-card" onclick="showToast('${f.name} selected! 🎂')">
+      <span class="flavor-emoji">${f.emoji}</span>
+      <div class="flavor-name">${f.name}</div>
+      <div class="flavor-desc">${f.desc}</div>
+    </div>`).join('');
+}
+
+function buildFAQ() {
+  document.getElementById('faq-list').innerHTML = FAQS.map((f,i) =>
+    `<div class="faq-item"><div class="faq-q" onclick="toggleFaq(${i})"><span class="faq-q-text">${f.q}</span><span class="faq-tog" id="ft${i}">+</span></div><div class="faq-a" id="fa${i}"><div class="faq-a-inner">${f.a}</div></div></div>`
+  ).join('');
+}
+
+function toggleFaq(i) {
+  const a = document.getElementById('fa'+i), t = document.getElementById('ft'+i);
+  const open = a.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(x => x.classList.remove('open'));
+  document.querySelectorAll('.faq-tog').forEach(x => x.textContent = '+');
+  if (!open) { a.classList.add('open'); t.textContent = '−'; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildMenuSections('menu-sections', false);
+  buildMenuSections('order-sections', true);
+  buildHomeSpecials();
+  buildCateringGrid();
+  buildFlavorGrid();
+  buildFAQ();
+});
+</script>
+</body>
+</html>
