@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oleo+Script:wght@400;700&display=swap" rel="stylesheet">
+    <title>sprout. - Find Your Perfect Plant</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Oleo Script', sans-serif, cursive, 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #2d5a3d 0%, #1a3a2a 50%, #0f2818 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://plus.unsplash.com/premium_photo-1663961915701-444d9e8d8744?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.6;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(34, 85, 51, 0.3);
+            z-index: -1;
+        }
+
+        header {
+            position: relative;
+            z-index: 50;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #fff;
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            min-height: 70vh;
+        }
+
+        .hero-glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            padding: 4rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-content h1 {
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #fff;
+            color: #2d5a3d;
+            padding: 14px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            max-width: 400px;
+            filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.3));
+        }
+
+        section {
+            padding: 5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        section h2 {
+            font-size: 42px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .plants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .plant-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .plant-card:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .plant-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            filter: brightness(1.1);
+        }
+
+        .plant-info {
+            padding: 1.5rem;
+        }
+
+        .plant-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .plant-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .plant-price {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2d5a3d;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart:hover {
+            background: #fff;
+            transform: scale(1.02);
+        }
+
+        .about-glass {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            line-height: 1.9;
+            font-weight: 300;
+        }
+
+        .about-glass p {
+            margin-bottom: 1.5rem;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .contact-glass {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .contact-form input::placeholder,
+        .contact-form textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .contact-form textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+        }
+
+        .cart-count {
+            display: inline-block;
+            background: #fff;
+            color: #2d5a3d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 968px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                min-height: auto;
+            }
+
+            .hero-glass {
+                padding: 2.5rem;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            nav ul {
+                gap: 1.5rem;
+            }
+
+            nav a {
+                font-size: 12px;
+            }
+
+            .plants-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            section h2 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-content h1 {
+                font-size: 28px;
+            }
+
+            .hero-glass {
+                padding: 1.5rem;
+            }
+
+            .plants-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            section {
+                padding: 3rem 1rem;
+            }
+        }
+    </style>
+</head>     
+<body>
+    <header>
+        <nav>
+            <div class="logo">sprout.</div>
+            <ul>
+                <li><a href="#shop">Plant Shop</a></li>
+                <li><a href="#inspirations">Inspirations</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#cart">Cart <span class="cart-count" id="cart-count">0</span></a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-glass">
+            <div class="hero-content">
+                <h1>Find the perfect complement to your room</h1>
+                <p>We will help you find plants that match your needs and style. Check our offer in the store and surround yourself with greenery!</p>
+                <button class="cta-button" onclick="document.getElementById('shop').scrollIntoView({behavior: 'smooth'})">Buy now</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=500&fit=crop" alt="Beautiful plant leaves">
+        </div>
+    </section>
+
+    <section id="shop">
+        <h2>Our Plant Collection</h2>
+        <div class="plants-grid">
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1559599810-46d8176e7f1f?w=400&h=250&fit=crop" alt="Monstera" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Monstera Deliciosa</h3>
+                    <p class="plant-description">Stunning tropical plant with iconic split leaves. A statement piece for any modern home.</p>
+                    <div class="plant-price">$45.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Monstera Deliciosa', 45)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1520763185298-1b434c919eba?w=400&h=250&fit=crop" alt="Pothos" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Golden Pothos</h3>
+                    <p class="plant-description">Perfect for beginners. Low-maintenance and great for hanging baskets or climbing.</p>
+                    <div class="plant-price">$18.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Golden Pothos', 18)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1545159142-27af1eea8e7f?w=400&h=250&fit=crop" alt="Snake Plant" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Snake Plant</h3>
+                    <p class="plant-description">Extremely hardy and air-purifying. Thrives even in low light conditions with minimal care.</p>
+                    <div class="plant-price">$25.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Snake Plant', 25)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1514329409350-18774394e0c0?w=400&h=250&fit=crop" alt="Rubber Plant" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Rubber Plant</h3>
+                    <p class="plant-description">Bold foliage and elegant growth habit. Makes an impressive statement in any space.</p>
+                    <div class="plant-price">$55.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Rubber Plant', 55)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=400&h=250&fit=crop" alt="Fiddle Leaf Fig" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Fiddle Leaf Fig</h3>
+                    <p class="plant-description">Instagram-worthy with large violin-shaped leaves. The ultimate statement piece for plant lovers.</p>
+                    <div class="plant-price">$65.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Fiddle Leaf Fig', 65)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="plant-card">
+                <img src="https://images.unsplash.com/photo-1585743860955-0b92d3c6a8de?w=400&h=250&fit=crop" alt="Succulent Mix" class="plant-image">
+                <div class="plant-info">
+                    <h3 class="plant-name">Succulent Collection</h3>
+                    <p class="plant-description">Assorted premium succulents. Perfect for small spaces and requiring minimal watering.</p>
+                    <div class="plant-price">$22.00</div>
+                    <button class="add-to-cart" onclick="addToCart('Succulent Collection', 22)">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="inspirations">
+        <h2>Plant Styling Inspirations</h2>
+        <div class="about-glass">
+            <p>Transform your living space into a lush botanical oasis. Our plants are carefully selected to thrive in various light conditions, from bright sunny windowsills to cozy corner nooks.</p>
+            <p>Whether you're decorating a minimalist Scandinavian apartment, a bohemian jungle-inspired space, or a sleek modern office, we have the perfect plants to complement your style.</p>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2>About PlantFashion</h2>
+        <div class="about-glass">
+            <p>PlantFashion is dedicated to bringing nature into your home with carefully curated plant collections that combine both beauty and functionality. We believe every space deserves to be surrounded by greenery.</p>
+            <p>Our team of plant experts works tirelessly to source the healthiest, most vibrant plants and deliver them to your doorstep. We're passionate about helping you create your own green sanctuary, regardless of your experience level.</p>
+            <p>Join thousands of happy plant parents who've transformed their spaces with PlantFashion. Your perfect plant is just a click away!</p>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2>Get in Touch</h2>
+        <div class="contact-glass">
+            <form class="contact-form" onsubmit="handleSubmit(event)">
+                <input type="text" placeholder="Your name" required>
+                <input type="email" placeholder="Your email" required>
+                <textarea placeholder="Tell us about your plant style preferences..." required></textarea>
+                <button type="submit" class="cta-button">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 PlantFashion. Bringing nature to your home. | All rights reserved.</p>
+    </footer>
+
+    <script>
+        let cart = [];
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartCount();
+            showNotification(`${name} added to your collection!`);
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: rgba(255, 255, 255, 0.95);
+                color: #2d5a3d;
+                padding: 1.2rem 1.8rem;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideIn 0.4s ease;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.4s ease';
+                setTimeout(() => notification.remove(), 400);
+            }, 2500);
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            showNotification('Message sent! We\'ll be in touch soon.');
+            event.target.reset();
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
