@@ -152,9 +152,9 @@ img,svg{image-rendering:pixelated;image-rendering:crisp-edges;}
   image-rendering:pixelated;
   image-rendering:crisp-edges;
 }
-#cur svg{display:none;}
+#cur svg{display:block;}
 #cur-ring{display:none;}
-body.hover #cur{transform:translate(-2px,-2px) scale(1.15);}
+body.hover #cur{transform:translate(-2px,-2px);}
 
 /* ── desktop background canvas (subtle drifting dots) ─────────── */
 #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55;}
@@ -1169,6 +1169,119 @@ footer{
   display:none;
 }
 .bulk-progress.visible{display:block;}
+/* ── outreach terminal modal ─────────────────────────────────── */
+#terminal-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(10,20,40,.75);
+  display:none;align-items:center;justify-content:center;padding:30px;
+}
+#terminal-overlay.open{display:flex;}
+.terminal-modal{
+  background:var(--crt-bg);
+  border:2.5px solid var(--crt-green);
+  box-shadow:0 0 32px rgba(125,255,140,.18), 6px 6px 0 #000;
+  width:100%;max-width:640px;
+  max-height:90vh;
+  display:flex;flex-direction:column;
+  font-family:var(--font-mono);
+  position:relative;
+}
+.terminal-titlebar{
+  background:#0a1f10;
+  border-bottom:2px solid var(--crt-green);
+  padding:7px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:15px;
+  color:var(--crt-green);
+  letter-spacing:.1em;
+}
+.terminal-titlebar .t-controls{display:flex;gap:6px;}
+.terminal-titlebar .t-dot{
+  width:13px;height:13px;
+  border:1.5px solid var(--crt-green);
+  background:#0a1f10;
+  cursor:none;
+  font-size:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--crt-green);
+}
+.terminal-titlebar .t-dot.close-t{border-color:var(--rust);color:var(--rust);}
+.terminal-body{padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
+.t-label{
+  font-size:13px;
+  color:var(--crt-amber);
+  letter-spacing:.12em;
+  margin-bottom:5px;
+}
+.t-input{
+  width:100%;
+  background:#060f0a;
+  border:1.5px solid var(--crt-green);
+  color:var(--crt-green);
+  font-family:var(--font-mono);
+  font-size:16px;
+  padding:10px 12px;
+  outline:none;
+  caret-color:var(--crt-green);
+}
+.t-input:focus{border-color:var(--crt-amber);box-shadow:0 0 8px rgba(255,184,77,.2);}
+.t-textarea{
+  width:100%;
+  background:#060f0a;
+  border:1.5px solid var(--crt-green);
+  color:var(--crt-green);
+  font-family:var(--font-mono);
+  font-size:14px;
+  padding:12px;
+  outline:none;
+  resize:vertical;
+  min-height:220px;
+  line-height:1.6;
+  caret-color:var(--crt-green);
+}
+.t-textarea:focus{border-color:var(--crt-amber);}
+.t-send-btn{
+  width:100%;
+  background:#0a1f10;
+  border:2px solid var(--crt-green);
+  color:var(--crt-green);
+  font-family:var(--font-mono);
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:.18em;
+  padding:14px;
+  cursor:none;
+  transition:all .15s;
+  position:relative;
+  overflow:hidden;
+}
+.t-send-btn:hover{background:var(--crt-green);color:#060f0a;}
+.t-send-btn:disabled{opacity:.5;cursor:not-allowed;}
+.t-send-btn.transmitting{
+  color:var(--crt-amber);
+  border-color:var(--crt-amber);
+  animation:flicker .4s infinite;
+}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.6}}
+.t-status{
+  font-family:var(--font-mono);
+  font-size:14px;
+  padding:10px 12px;
+  border:1.5px solid;
+  display:none;
+  letter-spacing:.06em;
+}
+.t-status.success{color:var(--crt-green);border-color:var(--crt-green);background:#030d06;}
+.t-status.error{color:var(--rust);border-color:var(--rust);background:#0d0303;}
+.t-footer{
+  border-top:1.5px solid #1a3a20;
+  padding:8px 14px;
+  font-size:13px;
+  color:#3a7a45;
+  letter-spacing:.08em;
+  display:flex;align-items:center;gap:8px;
+}
+.t-footer-dot{width:7px;height:7px;background:var(--crt-green);animation:blink 1.4s infinite;}
 </style>
 </head>
 <body>
@@ -1845,16 +1958,17 @@ function syncThemeIcon(){
 
 // ── Gmail token management ──────────────────────────────────────
 let gmailToken = localStorage.getItem("prospect_gmail_token") || null;
+let gmailEmail = localStorage.getItem("prospect_gmail_email") || null;
 
 function connectGmail(){
-  // If already connected, clicking again disconnects
   if(gmailToken){
     gmailToken = null;
+    gmailEmail = null;
     localStorage.removeItem("prospect_gmail_token");
+    localStorage.removeItem("prospect_gmail_email");
     updateGmailBtn();
     return;
   }
-  // Redirect to our auth function which sends user to Google
   window.location.href = "/api/auth";
 }
 
@@ -1862,7 +1976,11 @@ function updateGmailBtn(){
   const btn = document.getElementById("gmail-connect-btn");
   const label = document.getElementById("gmail-btn-label");
   const draftBtn = document.getElementById("gmail-draft-btn");
-  if(gmailToken){
+  if(gmailToken && gmailEmail){
+    btn.classList.add("connected");
+    label.textContent = `✓ ${gmailEmail}`;
+    if(draftBtn) draftBtn.disabled = false;
+  } else if(gmailToken){
     btn.classList.add("connected");
     label.textContent = "Gmail Connected ✓";
     if(draftBtn) draftBtn.disabled = false;
@@ -1873,14 +1991,17 @@ function updateGmailBtn(){
   }
 }
 
-// Pick up token from URL after Google redirects back
 function checkTokenInURL(){
   const params = new URLSearchParams(window.location.search);
   const token = params.get("access_token");
+  const email = params.get("gmail_email");
   if(token){
     gmailToken = token;
     localStorage.setItem("prospect_gmail_token", token);
-    // Clean the token out of the URL so it's not sitting there
+    if(email){
+      gmailEmail = email;
+      localStorage.setItem("prospect_gmail_email", email);
+    }
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 }
@@ -1894,7 +2015,6 @@ async function sendToGmailDraft(){
   const label = document.getElementById("gmail-draft-label");
   const emailText = document.getElementById("modal-email").textContent;
 
-  // Pull subject from first line ("Subject: ...")
   const lines = emailText.split("\n");
   const subjectLine = lines.find(l => l.startsWith("Subject:")) || "";
   const subject = subjectLine.replace("Subject:", "").trim();
@@ -1907,12 +2027,7 @@ async function sendToGmailDraft(){
     const res = await fetch("/api/gmail-draft", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accessToken: gmailToken,
-        to: "",
-        subject,
-        body
-      })
+      body: JSON.stringify({ accessToken: gmailToken, to: "", subject, body })
     });
     const data = await res.json();
     if(data.success){
@@ -1923,10 +2038,11 @@ async function sendToGmailDraft(){
         btn.disabled = false;
       }, 3000);
     } else {
-      // Token might be expired
       if(data.error && data.error.toLowerCase().includes("invalid")){
         gmailToken = null;
+        gmailEmail = null;
         localStorage.removeItem("prospect_gmail_token");
+        localStorage.removeItem("prospect_gmail_email");
         updateGmailBtn();
         showGmailToast("Gmail session expired. Reconnect Gmail and try again.", "error");
       } else {
@@ -1942,16 +2058,9 @@ async function sendToGmailDraft(){
   }
 }
 
-function showGmailToast(msg, type){
-  const toast = document.getElementById("gmail-toast");
-  toast.textContent = msg;
-  toast.className = "gmail-toast " + type;
-  toast.style.display = "block";
-  setTimeout(() => { toast.style.display = "none"; }, 5000);
-}
-
 // ── Everything else (unchanged) ─────────────────────────────────────
 let leads=[],currentFilter="all";
+let selectedIdxs = new Set();
 
 function getStatus(id){return(JSON.parse(localStorage.getItem("prospect_status")||"{}"))[id]||"new";}
 function setStatus(id,st){const d=JSON.parse(localStorage.getItem("prospect_status")||"{}");d[id]=st;localStorage.setItem("prospect_status",JSON.stringify(d));}
@@ -2119,6 +2228,7 @@ function renderLeads(){
         <div class="lead-actions">
           <button class="lead-btn mark-btn" data-idx="${l._idx}">Mark Contacted</button>
           <button class="lead-btn primary email-btn" data-idx="${l._idx}">Draft Email</button>
+          <button class="lead-btn terminal-btn" data-idx="${l._idx}">Send Direct</button>
         </div>
         <div class="history-actions" style="margin-top:10px;">
           <input class="small-date reminder-date" type="date" data-idx="${l._idx}" value="${historyItem&&historyItem.followUpDate?historyItem.followUpDate:""}">
@@ -2130,6 +2240,9 @@ function renderLeads(){
 
   document.querySelectorAll(".mark-btn").forEach(btn=>{btn.addEventListener("click",()=>markStatus(parseInt(btn.dataset.idx,10),"contacted"));});
   document.querySelectorAll(".email-btn").forEach(btn=>{btn.addEventListener("click",()=>openModal(parseInt(btn.dataset.idx,10)));});
+  document.querySelectorAll(".terminal-btn").forEach(btn => {
+    btn.addEventListener("click", () => openTerminal(parseInt(btn.dataset.idx, 10)));
+  });
   document.querySelectorAll(".lead-checkbox").forEach(cb=>{
     cb.addEventListener("change",()=>{
       const idx=parseInt(cb.dataset.idx,10);
@@ -2230,10 +2343,7 @@ Hi there,
 
 I came across ${lead.name} while looking for ${lead.cat.toLowerCase()} services in the area and wanted to reach out. I'm a local web designer based in Newport News and I build websites for small businesses in the Hampton Roads area.
 
-I noticed you don't currently have a website, so I put together a quick concept for you that I think you'd like. I'd love to build you a clean, professional website that:
-  - Shows up in Google searches
-  - Lets customers find your hours, location and services
-  - Works great on phones where most people search
+I noticed you don't currently have a website, so I put together a quick concept for you that I think you'd like. I'd love to build you a clean, professional website that helps you get more customers and grow your business.
 
 If you want to see some of my work first, feel free to check out helenaledev.com. I've worked with a range of local businesses and would love to add ${lead.name} to that list.
 
@@ -2287,7 +2397,6 @@ function copyEmail(){
     setTimeout(()=>btn.textContent=orig,1800);
   });
 }
-let selectedIdxs = new Set();
 
 function updateBulkBar(){
   const bar = document.getElementById("bulk-bar");
@@ -2372,6 +2481,98 @@ async function runBulkDraft(){
     renderLeads();
     renderHistory();
   }, 4000);
+}
+let terminalLeadIdx = null;
+
+function openTerminal(idx) {
+  if (!gmailToken) {
+    alert("Connect Gmail first using the button in the nav.");
+    return;
+  }
+  const lead = getLeadByIdx(idx);
+  if (!lead) return;
+  terminalLeadIdx = idx;
+
+  document.getElementById("t-to").value = "";
+  document.getElementById("t-subject").value = `Quick idea for ${lead.name}`;
+  document.getElementById("t-body").value = generateEmail(lead).split("\n").slice(2).join("\n").trim();
+  document.getElementById("t-status").style.display = "none";
+  document.getElementById("t-send-btn").textContent = "[ EXECUTE_SEND ]";
+  document.getElementById("t-send-btn").disabled = false;
+  document.getElementById("t-send-btn").className = "t-send-btn";
+  document.getElementById("t-connected-email").textContent =
+    gmailEmail ? `SENDING_FROM // ${gmailEmail}` : "GMAIL_CONNECTED";
+  document.getElementById("terminal-overlay").classList.add("open");
+}
+
+function closeTerminal(e) {
+  if (e.target === document.getElementById("terminal-overlay")) closeTerminalDirect();
+}
+function closeTerminalDirect() {
+  document.getElementById("terminal-overlay").classList.remove("open");
+  terminalLeadIdx = null;
+}
+
+async function executeTransmission() {
+  const to = document.getElementById("t-to").value.trim();
+  const subject = document.getElementById("t-subject").value.trim();
+  const body = document.getElementById("t-body").value.trim();
+  const btn = document.getElementById("t-send-btn");
+  const status = document.getElementById("t-status");
+
+  if (!to || !to.includes("@")) {
+    status.textContent = "ERROR // INVALID_RECIPIENT_ADDRESS";
+    status.className = "t-status error";
+    status.style.display = "block";
+    return;
+  }
+
+  btn.textContent = "TRANSMITTING...";
+  btn.className = "t-send-btn transmitting";
+  btn.disabled = true;
+  status.style.display = "none";
+
+  try {
+    const res = await fetch("/api/send-direct", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken: gmailToken, to, subject, body })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      status.textContent = "TRANSMISSION_SUCCESSFUL // LEAD_UPDATED";
+      status.className = "t-status success";
+      status.style.display = "block";
+      btn.textContent = "[ TRANSMITTED ]";
+      btn.className = "t-send-btn";
+
+      // Update lead status to contacted
+      if (terminalLeadIdx !== null) {
+        setStatus(terminalLeadIdx, "contacted");
+        upsertHistoryLead(getLeadByIdx(terminalLeadIdx), "contacted");
+        updateStats();
+        renderLeads();
+        renderHistory();
+      }
+
+      setTimeout(() => closeTerminalDirect(), 3000);
+    } else {
+      status.textContent = "ERROR // " + (data.error || "UNKNOWN_FAILURE");
+      status.className = "t-status error";
+      status.style.display = "block";
+      btn.textContent = "[ EXECUTE_SEND ]";
+      btn.className = "t-send-btn";
+      btn.disabled = false;
+    }
+  } catch (err) {
+    status.textContent = "ERROR // CONNECTION_FAILED";
+    status.className = "t-status error";
+    status.style.display = "block";
+    btn.textContent = "[ EXECUTE_SEND ]";
+    btn.className = "t-send-btn";
+    btn.disabled = false;
+  }
 }
 
 window.addEventListener("load",()=>{
@@ -2459,6 +2660,38 @@ window.addEventListener("load",()=>{
   renderLeads();
   renderHistory();
   renderReminders();
+<div id="terminal-overlay" onclick="closeTerminal(event)">
+  <div class="terminal-modal">
+    <div class="terminal-titlebar">
+      <span>// OUTREACH_TERMINAL.exe</span>
+      <div class="t-controls">
+        <span class="t-dot close-t" onclick="closeTerminalDirect()">×</span>
+      </div>
+    </div>
+    <div class="terminal-body">
+      <div>
+        <div class="t-label">[ RECIPIENT_ADDRESS ]</div>
+        <input type="email" class="t-input" id="t-to" placeholder="paste@email.com" />
+      </div>
+      <div>
+        <div class="t-label">[ SUBJECT ]</div>
+        <input type="text" class="t-input" id="t-subject" />
+      </div>
+      <div>
+        <div class="t-label">[ MESSAGE_BODY ]</div>
+        <textarea class="t-textarea" id="t-body"></textarea>
+      </div>
+      <div class="t-status" id="t-status"></div>
+      <button class="t-send-btn" id="t-send-btn" onclick="executeTransmission()">
+        [ EXECUTE_SEND ]
+      </button>
+    </div>
+    <div class="t-footer">
+      <span class="t-footer-dot"></span>
+      <span id="t-connected-email">NOT_CONNECTED</span>
+    </div>
+  </div>
+</div>
 });
 </script>
 </body>

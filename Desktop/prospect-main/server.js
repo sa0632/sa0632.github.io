@@ -11,6 +11,7 @@ const search = require("./api/functions/search");
 const auth = require("./api/functions/auth");
 const authCallback = require("./api/functions/auth-callback");
 const gmailDraft = require("./api/functions/gmail-draft");
+const generateEmail = require("./api/functions/generate-email");
 
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
@@ -52,6 +53,18 @@ const server = http.createServer(async (req, res) => {
     req.on("end", async () => {
       const event = { httpMethod: "POST", body };
       const result = await gmailDraft.handler(event);
+      res.writeHead(result.statusCode, { "Content-Type": "application/json" });
+      res.end(result.body);
+    });
+    return;
+  }
+
+  if (pathname === "/api/generate-email") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      const event = { httpMethod: "POST", body };
+      const result = await generateEmail.handler(event);
       res.writeHead(result.statusCode, { "Content-Type": "application/json" });
       res.end(result.body);
     });

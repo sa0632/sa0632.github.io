@@ -43,5 +43,17 @@ exports.handler = async function(event) {
 
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  
+  if (pathname === "/api/send-direct") {
+  let body = "";
+  req.on("data", chunk => { body += chunk; });
+  req.on("end", async () => {
+    const event = { httpMethod: "POST", body };
+    const result = await sendDirect.handler(event);
+    res.writeHead(result.statusCode, { "Content-Type": "application/json" });
+    res.end(result.body);
+  });
+  return;
+}
   }
 };
