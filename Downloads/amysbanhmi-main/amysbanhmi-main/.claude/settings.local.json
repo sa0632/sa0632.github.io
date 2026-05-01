@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/Helena/Downloads/amysbanhmi-main/amysbanhmi-main/images\")",
+      "Bash(cp 'C:/Users/Helena/OneDrive/Pictures/anysbanhmi pics/540976345_122095146639001208_3218323194510674216_n.jpg' C:/Users/Helena/Downloads/amysbanhmi-main/amysbanhmi-main/images/baguettes.jpg)",
+      "Bash(cp 'C:/Users/Helena/OneDrive/Pictures/anysbanhmi pics/637971164_122129368137001208_7246489129839051787_n.jpg' C:/Users/Helena/Downloads/amysbanhmi-main/amysbanhmi-main/images/banhmi-sandwich.jpg)",
+      "Bash(cp 'C:/Users/Helena/OneDrive/Pictures/anysbanhmi pics/581409349_122117860485001208_6354431731530043328_n.jpg' C:/Users/Helena/Downloads/amysbanhmi-main/amysbanhmi-main/images/steamed-bun.jpg)",
+      "Bash(cp 'C:/Users/Helena/OneDrive/Pictures/anysbanhmi pics/615380946_122124996909001208_2783690044062387343_n.jpg' C:/Users/Helena/Downloads/amysbanhmi-main/amysbanhmi-main/images/vietnamese-coffee.jpg)"
+    ]
+  }
+}
